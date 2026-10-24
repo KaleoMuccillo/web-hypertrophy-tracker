@@ -20,6 +20,9 @@ export default function Home() {
                 key={pagina}
                 onClick={() => {
                   setPaginaAtiva(pagina);
+                  alert(
+                    "Você acabou de dar gratuitamente seus dados para o governo chines, parabéns!",
+                  );
                 }}
                 className={
                   pagina === PaginaAtiva

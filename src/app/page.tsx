@@ -1,85 +1,74 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
+import { useRouter } from "next/navigation";
+
+import CardIndicador from "../components/CardIndicador";
+import SideBar from "../components/SideBar";
+import { Scale, Dumbbell, Flame } from "lucide-react";
 
 export default function Home() {
-  const [PaginaAtiva, setPaginaAtiva] = useState("Dashboard");
-  const paginas = ["Dashboard", "Peso", "Dieta", "Treinos"];
+  const router = useRouter();
+  const [nomeUsuario, setNomeUsuario] = useState("");
 
+  useEffect(() => {
+    async function carregarUsuario() {
+      const { data, error } = await supabase.auth.getUser();
+
+      if (error || !data.user) {
+        router.replace("/login");
+        return;
+      }
+
+      const nome = data.user.user_metadata?.displayName;
+
+      if (nome) {
+        setNomeUsuario(nome);
+      }
+    }
+
+    carregarUsuario();
+  }, []);
   return (
     <main className="min-h-screen bg-[#100d17] text-[#FAF7FF] flex">
-      <aside className="w-64 min-h-screen bg-[#050407]">
-        <div className="p-6">
-          <h2 className="text-2xl font-bold text-[#6138db]">
-            Hypertrophy Tracker
-          </h2>
-
-          <nav className="mt-8 flex flex-col gap-4">
-            {paginas.map((pagina) => (
-              <button
-                key={pagina}
-                onClick={() => {
-                  setPaginaAtiva(pagina);
-                  alert(
-                    "Você acabou de dar gratuitamente seus dados para o governo chines, parabéns!",
-                  );
-                }}
-                className={
-                  pagina === PaginaAtiva
-                    ? "text-[#6138db] font-bold text-left"
-                    : "text-[#A78BFA] hover:text-[#6138db] text-left transition-colors font-semibold"
-                }
-              >
-                {pagina}
-              </button>
-            ))}
-          </nav>
-        </div>
-      </aside>
-
-      <section className="flex-1 p-8">
-        <header>
+      <SideBar />
+      <section className="min-w-0 flex-1 p-6 md:p-10">
+        <header className="mb-8">
           <p className="text-sm font-semibold uppercase tracking-widest text-[#A78BFA]">
             Visão geral
           </p>
 
           <h1 className="mt-2 text-4xl font-bold tracking-tight text-[#FAF7FF]">
-            Dashboard
+            {nomeUsuario ? `Olá, ${nomeUsuario}!` : "Dashboard"}
           </h1>
 
           <p className="mt-2 text-[#A78BFA]">Acompanhe sua evolução.</p>
         </header>
-        <div className="mt-8 grid grid-cols-2 gap-4">
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
           <CardIndicador
             titulo="Peso Atual"
             valor="59,0 kg"
             descricao="Último Registro 19/09/1999"
+            icone={<Scale size={24} />}
           />
           <CardIndicador
             titulo="Treinos"
             valor="0/3"
             descricao="Nesta Semana"
+            icone={<Dumbbell size={24} />}
+          />
+          <CardIndicador
+            titulo="Meta Calórica"
+            valor="1500 / 2341 kcal"
+            descricao="Consumo / Meta Diária"
+            icone={<Flame size={24} />}
+            caloriasConsumidas={1500}
+            metaCalorica={2000}
           />
         </div>
       </section>
     </main>
-  );
-}
-
-type CardIndicadorProps = {
-  titulo: string;
-  valor: string;
-  descricao: string;
-};
-
-function CardIndicador({ titulo, valor, descricao }: CardIndicadorProps) {
-  return (
-    <div className="rounded-xl border border-[#38294d] bg-[#21182f] p-5">
-      <p className="text-sm text-[#b7adca]">{titulo}</p>
-
-      <h2 className="mt-3 text-3xl font-bold text-[#FAF7FF]">{valor}</h2>
-
-      <p className="mt-2 text-sm text-[#A78BFA]">{descricao}</p>
-    </div>
   );
 }
